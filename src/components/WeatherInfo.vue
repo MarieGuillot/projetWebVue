@@ -1,0 +1,101 @@
+<template>
+<div id="OuterBlock">
+  <div id="WeatherInfo">
+    <!-- Temperature -->
+    <p id="textTemperature"> {{temperature}} </p>
+    <!-- Wind -->
+    <p id="textWind"> {{wind}} </p>
+    <!-- Description -->
+    <p id="textDescription" v-html="description"> </p>
+  </div>
+</div>
+</template>
+
+<script>
+
+import {extractNumberFromString, getWeatherData, qualifyTemperature, qualifyWind} from '@/services/api/weatherAPI.js'
+import {getVerseWithTheWord} from '@/services/api/poetryAPI.js'
+
+export default {
+  name: 'WeatherInfo',
+  props: {
+    "temperature" : {type: String, default:"Ask for a city"}, 
+    "wind" : {type: String, default:"And a time"}, 
+    "description" : {type: String, default:"To discover weather through a poem"}},
+  data() {
+    return {
+      weatherData: []
+    }
+  },
+  created: function() {
+	},
+
+  mounted() {
+    this.$root.$on('city', (cityname) => {
+      console.log(cityname); 
+      this.retrieveWeatherData(cityname);
+    })
+  },
+	methods: {
+			async retrieveWeatherData(city) {
+					this.weatherData = await getWeatherData(city);
+
+          var temperatureToColor = extractNumberFromString(this.weatherData.temperature);
+          var windToColor = extractNumberFromString(this.weatherData.wind);
+          const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+          temperatureToColor = clamp(temperatureToColor, -25.5, 25.5)*10; 
+          console.log(temperatureToColor);
+          windToColor = clamp(windToColor, 0, 63)*4;
+          console.log(windToColor);
+
+          if(temperatureToColor >= 0) {
+            document.querySelector(':root').style.setProperty("--my-main-color", "rgb("+temperatureToColor+", "+windToColor+", 0)");
+          } else {
+            var temperatureAbs = Math.abs(temperatureToColor);
+            document.querySelector(':root').style.setProperty("--my-main-color", "rgb(0,"+ windToColor+"," +temperatureAbs+")");
+          }
+          
+
+          const weatherDescription = this.weatherData.description;
+          var descriptionPoem = "";
+          const words = weatherDescription.split(' ');
+          for (var word of words) {
+            descriptionPoem += await getVerseWithTheWord(word) + " <br> ";
+          }
+          this.description = descriptionPoem;
+          const weatherTemperature = qualifyTemperature(extractNumberFromString(this.weatherData.temperature));
+          this.temperature = await getVerseWithTheWord(weatherTemperature);
+          const weatherWind = qualifyWind(extractNumberFromString(this.weatherData.wind));
+          this.wind = await getVerseWithTheWord(weatherWind);
+
+          
+			}
+	}
+}
+
+
+
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped> 
+#OuterBlock{
+  text-align: center;
+  padding:20px;
+  padding-top: 60px;
+}
+
+#WeatherInfo {
+  font-family: 'Cyrene', sans-serif;
+  font-size: 20px;
+  text-align: center;
+  background: url('../assets/paper.jpg'), var(--my-paper-color);
+  background-size : 500px;
+  background-blend-mode: multiply;
+  padding: 60px;
+  display : inline-block;
+  border-radius: 30px;
+  border: solid 2px var(--my-main-color);
+}
+
+</style>
