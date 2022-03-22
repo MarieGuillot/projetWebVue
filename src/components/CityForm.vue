@@ -5,16 +5,16 @@
        minlength="1" maxlength="20" size="10">
        <button id="OkButton" v-on:click="submitCity"> Ok </button>
     </form>
+    
 </template>
 
 <script>
 export default {
   name: 'CityForm',
   methods : {
-    submitCity() {
+    submitCity(event) {
       event.preventDefault();
       var txt = document.getElementById('name');
-      
       this.$root.$emit('city', txt.value);
     }
   }

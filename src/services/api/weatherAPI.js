@@ -1,7 +1,10 @@
 const getWeatherData = async function(city) {
+    
     const response = await fetch("https://goweather.herokuapp.com/weather/"+city) 
+    console.log( await response.status);
     if (response.status == 200) {
-        return response.json()
+        let data = await response.json();
+        return data;
     } else {
         new Error(response.statusText)
     }

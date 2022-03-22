@@ -7,7 +7,6 @@
       </div>
       <CityForm/>
     </header>  
-
     <TimeSelection/>
     <WeatherInfo/>
     <footer>

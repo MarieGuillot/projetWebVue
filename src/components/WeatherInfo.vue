@@ -18,60 +18,86 @@ import {getVerseWithTheWord} from '@/services/api/poetryAPI.js'
 
 export default {
   name: 'WeatherInfo',
-  props: {
-    "temperature" : {type: String, default:"Ask for a city"}, 
-    "wind" : {type: String, default:"And a time"}, 
-    "description" : {type: String, default:"To discover weather through a poem"}},
+  // computed: {
+	// 	computedTemperature: function() {
+	// 		return this.number1 + this.number2		
+	// 	}
+	// },
   data() {
     return {
-      weatherData: []
+      weatherData: [],
+      request : false,
+      "temperature" : "Ask for a city", 
+      "wind" : "And a time", 
+      "description" : "To discover weather through a poem"
     }
   },
   created: function() {
 	},
 
   mounted() {
-    this.$root.$on('city', (cityname) => {
-      console.log(cityname); 
-      this.retrieveWeatherData(cityname);
-    })
+      this.$root.$on('city', (cityname) => {
+        getWeatherData(cityname).then(
+            async (data) => {
+            this.weatherData = data;
+            this.composeAPoemFromPresentWeather();
+           // this.request = true;
+            })
+      // });
+      // this.$root.$on('present', (isPresent) => {
+      //   if (isPresent && this.request) {
+      //     this.composeAPoemFromPresentWeather();
+      //   }
+      });
   },
 	methods: {
-			async retrieveWeatherData(city) {
-					this.weatherData = await getWeatherData(city);
+      setColors() {
+        var temperatureToColor = extractNumberFromString(this.weatherData.temperature);
+      
+        var windToColor = extractNumberFromString(this.weatherData.wind);
+        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
-          var temperatureToColor = extractNumberFromString(this.weatherData.temperature);
-          var windToColor = extractNumberFromString(this.weatherData.wind);
-          const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-          temperatureToColor = clamp(temperatureToColor, -25.5, 25.5)*10; 
-          console.log(temperatureToColor);
-          windToColor = clamp(windToColor, 0, 63)*4;
-          console.log(windToColor);
+        temperatureToColor = clamp(temperatureToColor, -25.5, 25.5)*10; 
+        console.log(temperatureToColor);
+        
+        windToColor = clamp(windToColor, 0, 63)*4;
+        console.log(windToColor);
 
-          if(temperatureToColor >= 0) {
-            document.querySelector(':root').style.setProperty("--my-main-color", "rgb("+temperatureToColor+", "+windToColor+", 0)");
-          } else {
-            var temperatureAbs = Math.abs(temperatureToColor);
-            document.querySelector(':root').style.setProperty("--my-main-color", "rgb(0,"+ windToColor+"," +temperatureAbs+")");
-          }
-          
+        if(temperatureToColor >= 0) {
+          document.querySelector(':root').style.setProperty("--my-main-color", "rgb("+temperatureToColor+", "+windToColor+", 0)");
+        } else {
+          var temperatureAbs = Math.abs(temperatureToColor);
+          document.querySelector(':root').style.setProperty("--my-main-color", "rgb(0,"+ windToColor+"," +temperatureAbs+")");
+        }
+      },
 
-          const weatherDescription = this.weatherData.description;
-          var descriptionPoem = "";
-          const words = weatherDescription.split(' ');
-          for (var word of words) {
-            descriptionPoem += await getVerseWithTheWord(word) + " <br> ";
-          }
-          this.description = descriptionPoem;
-          const weatherTemperature = qualifyTemperature(extractNumberFromString(this.weatherData.temperature));
-          this.temperature = await getVerseWithTheWord(weatherTemperature);
-          const weatherWind = qualifyWind(extractNumberFromString(this.weatherData.wind));
-          this.wind = await getVerseWithTheWord(weatherWind);
+      async createAPoemWithDescription() {
+        const weatherDescription = this.weatherData.description;
+        var descriptionPoem = "";
+        const words = weatherDescription.split(' ');
+        for (var word of words) {
+          descriptionPoem += await getVerseWithTheWord(word) + " <br> ";
+        }
+        this.description = descriptionPoem;
+      },
+      async createAVerseWithTemperature() {
+        const weatherTemperature = qualifyTemperature(extractNumberFromString(this.weatherData.temperature));
+        this.temperature = await getVerseWithTheWord(weatherTemperature);
+      },
+      async createAVerseWithWind() {
+        const weatherWind = qualifyWind(extractNumberFromString(this.weatherData.wind));
+        this.wind = await getVerseWithTheWord(weatherWind);
+      },
 
-          
-			}
+			async composeAPoemFromPresentWeather() {
+                this.setColors();
+                this.createAPoemWithDescription();
+                this.createAVerseWithTemperature();
+                this.createAVerseWithWind();
+            }
+			},
 	}
-}
+
 
 
 

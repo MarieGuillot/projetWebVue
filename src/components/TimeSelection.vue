@@ -1,13 +1,24 @@
 <template>
     <div id="TimeSelection">
-    <div id="present"> Present </div>
-    <div id="future"> Future </div>
+    <div id="present" v-on:click="time" :class="{'active': isPresent}">Present </div>
+    <div id="future" v-on:click="time" :class="{'active': !isPresent}">Future </div>
     </div>
 </template>
 
 <script>
 export default {
-  name: 'TimeSelection'
+  name: 'TimeSelection',
+  data() {
+    return {
+     isPresent:true,
+    }
+  },
+  methods : {
+    time() {
+      this.isPresent = !this.isPresent;
+      this.$root.$emit('present', this.isPresent);
+    }
+  }
 }
 
 </script>
@@ -33,5 +44,9 @@ export default {
   border-left: solid 2px var(--my-main-color);
   float:right;
   width:50vw;
+}
+
+.active{
+  color:white;
 }
 </style>
