@@ -11,7 +11,7 @@
     <WeatherInfo/>
     <footer>
       <div id="infos">
-      Infos
+      You searched {{city}}.
       </div>
     </footer>  
 </div>
@@ -31,7 +31,17 @@ export default {
 		WeatherInfo,
     CityForm,
     TimeSelection
-	}
+	},
+   data() {
+    return {
+      city : "no city yet"
+      }
+   },
+  mounted() {
+      this.$root.$on('city', (cityname) => {
+        this.city = cityname;
+      });
+  }
 }
 
 </script>
@@ -120,6 +130,7 @@ footer {
   background: url('./assets/paper.jpg'), var(--my-paper-color);
   background-size : 500px;
   background-blend-mode: multiply;
+  font-size: 20px;
 }
 
 #infos {

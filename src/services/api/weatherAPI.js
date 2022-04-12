@@ -15,8 +15,13 @@ function extractNumberFromString(string) {
     if (string[0]=="-") {
         signe = -1;
     }
-    var matches = string.match(/(\d+)/)
-    return signe*parseFloat(matches[0])
+    var matches = string.match(/(\d+)/);
+    var number = signe*parseFloat(matches[0]);
+    if (number) {
+        return number;
+    } else {
+        return 0; //sometimes the API send an empty string
+    }
 }
 
 function qualifyWind(speed){

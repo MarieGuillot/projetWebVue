@@ -2,34 +2,63 @@
 <div id="OuterBlock">
   <div id="WeatherInfo">
     <!-- Temperature -->
-    <p id="textTemperature"> {{temperature}} </p>
+    <p id="textTemperature"> {{computedTemperature}} </p>
     <!-- Wind -->
-    <p id="textWind"> {{wind}} </p>
+    <p id="textWind"> {{computedWind}} </p>
     <!-- Description -->
-    <p id="textDescription" v-html="description"> </p>
+    <p id="textDescription" v-html="computedDescription"> </p>
   </div>
 </div>
 </template>
 
 <script>
 
-import {extractNumberFromString, getWeatherData, qualifyTemperature, qualifyWind} from '@/services/api/weatherAPI.js'
-import {getVerseWithTheWord} from '@/services/api/poetryAPI.js'
+import {extractNumberFromString, getWeatherData} from '@/services/api/weatherAPI.js'
+import {createAPoemWithDescription, createAVerseWithTemperature, createAVerseWithWind} from '@/services/api/poetryAPI.js'
 
 export default {
   name: 'WeatherInfo',
-  // computed: {
-	// 	computedTemperature: function() {
-	// 		return this.number1 + this.number2		
-	// 	}
-	// },
+  computed: {
+		computedTemperature: function() {
+      if(this.showPresent) {
+        return this.presentTemperature;
+      }
+      else {
+        return this.futureTemperature;
+      }
+		},
+    computedWind: function() {
+			if(this.showPresent) {
+        return this.presentWind;
+      }
+      else {
+        return this.futureWind;
+      }
+		},
+    computedDescription: function() {
+			if(this.showPresent) {
+        return this.presentDescription;
+      }
+      else {
+        return this.futureDescription;
+      }
+		}
+	},
   data() {
     return {
       weatherData: [],
       request : false,
-      "temperature" : "Ask for a city", 
-      "wind" : "And a time", 
-      "description" : "To discover weather through a poem"
+      presentTemperatureValue : 0,
+      presentWindValue : 0,
+      futureTemperatureValue : 0,
+      futureWindValue : 0,
+      presentTemperature : "Ask for a city", 
+      presentWind : "And a time", 
+      presentDescription : "To discover weather through a poem", 
+      futureTemperature : "Ask for a city", 
+      futureWind : "And a time", 
+      futureDescription : "To discover weather through a poem", 
+      showPresent : true,
     }
   },
   created: function() {
@@ -40,28 +69,35 @@ export default {
         getWeatherData(cityname).then(
             async (data) => {
             this.weatherData = data;
+            console.log(data.forecast);
             this.composeAPoemFromPresentWeather();
-           // this.request = true;
-            })
-      // });
-      // this.$root.$on('present', (isPresent) => {
-      //   if (isPresent && this.request) {
-      //     this.composeAPoemFromPresentWeather();
-      //   }
+            this.composeAPoemFromFutureWeather();
+            this.request = true;
+            this.setFutureOrPresentColors();
+            });
+       
       });
-  },
-	methods: {
-      setColors() {
-        var temperatureToColor = extractNumberFromString(this.weatherData.temperature);
-      
-        var windToColor = extractNumberFromString(this.weatherData.wind);
-        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
+      this.$root.$on('present', (isPresent) => {
+        this.showPresent = isPresent;
+        this.setFutureOrPresentColors();
+      });
+     
+  },
+
+	methods: {
+      setFutureOrPresentColors() {
+        if (this.showPresent) {
+          this.setColors(this.presentTemperatureValue, this.presentWindValue);
+        } else {
+          this.setColors(this.futureTemperatureValue, this.futureWindValue);
+        }
+      },
+
+      setColors(temperatureToColor, windToColor) {
+        const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
         temperatureToColor = clamp(temperatureToColor, -25.5, 25.5)*10; 
-        console.log(temperatureToColor);
-        
         windToColor = clamp(windToColor, 0, 63)*4;
-        console.log(windToColor);
 
         if(temperatureToColor >= 0) {
           document.querySelector(':root').style.setProperty("--my-main-color", "rgb("+temperatureToColor+", "+windToColor+", 0)");
@@ -71,31 +107,42 @@ export default {
         }
       },
 
-      async createAPoemWithDescription() {
-        const weatherDescription = this.weatherData.description;
-        var descriptionPoem = "";
-        const words = weatherDescription.split(' ');
-        for (var word of words) {
-          descriptionPoem += await getVerseWithTheWord(word) + " <br> ";
-        }
-        this.description = descriptionPoem;
-      },
-      async createAVerseWithTemperature() {
-        const weatherTemperature = qualifyTemperature(extractNumberFromString(this.weatherData.temperature));
-        this.temperature = await getVerseWithTheWord(weatherTemperature);
-      },
-      async createAVerseWithWind() {
-        const weatherWind = qualifyWind(extractNumberFromString(this.weatherData.wind));
-        this.wind = await getVerseWithTheWord(weatherWind);
+			async composeAPoemFromPresentWeather() {
+        this.presentTemperatureValue = extractNumberFromString(this.weatherData.temperature);
+        this.presentWindValue = extractNumberFromString(this.weatherData.wind);
+        this.presentDescription = await createAPoemWithDescription(this.weatherData.description);
+        this.presentTemperature = await createAVerseWithTemperature(this.presentTemperatureValue);
+        this.presentWind = await createAVerseWithWind(this.presentWindValue);
+        
       },
 
-			async composeAPoemFromPresentWeather() {
-                this.setColors();
-                this.createAPoemWithDescription();
-                this.createAVerseWithTemperature();
-                this.createAVerseWithWind();
-            }
+      async composeAPoemFromFutureWeather() {
+        const futureTimes = ["tomorrow", "next day", "day after", "future"];
+        const index = Math.floor(Math.random() * futureTimes.length);
+        this.futureDescription = await createAPoemWithDescription(futureTimes[index]);
+        if (index < futureTimes.length-1) {
+          this.futureTemperatureValue = extractNumberFromString(this.weatherData.forecast[index].temperature);
+          this.futureWindValue = extractNumberFromString(this.weatherData.forecast[index].wind);
+          this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
+          this.futureWind = await createAVerseWithWind(this.futureWindValue);
+        } else {
+          var sumT = 0.; 
+          var sumW = 0.; 
+          for (var day of this.weatherData.forecast) {
+            sumT += extractNumberFromString(day.temperature);
+            sumW += extractNumberFromString(day.wind);
+          }
+          this.futureTemperatureValue = sumT/3.;
+          this.futureWindValue = sumW/3.;
+          this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
+          this.futureWind = await createAVerseWithWind(this.futureWindValue);
+        }
+        
+      }
+			
 			},
+
+      
 	}
 
 
