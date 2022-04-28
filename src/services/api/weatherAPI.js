@@ -59,6 +59,18 @@ function qualifyWind(speed){
     }
 }
 
+function optionToIndex(option) {
+    if(option == "day1") {
+        return 0;
+    } else if (option == "day2") {
+        return 1;
+    } else if (option == "day3") {
+        return 2;
+    } else {
+        return 3;
+    }
+}
+
 function qualifyTemperature(temperature){
     if (temperature < -15) {
         return "freezing";
@@ -80,5 +92,5 @@ function qualifyTemperature(temperature){
     }
 }
 
-export { getWeatherData, extractNumberFromString, qualifyTemperature, qualifyWind, falseWeatherData}
+export { getWeatherData, extractNumberFromString, qualifyTemperature, qualifyWind, falseWeatherData, optionToIndex}
 

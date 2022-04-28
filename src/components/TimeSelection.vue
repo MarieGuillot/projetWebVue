@@ -14,10 +14,15 @@ export default {
     }
   },
   methods : {
-    time() {
-      this.isPresent = !this.isPresent;
-      this.$emit('presentWanted', this.isPresent);
-    }
+    time(event) {
+      if(event.target.id == "present" && this.isPresent == false) {
+        this.isPresent = true;
+        this.$emit('presentWanted', this.isPresent);
+      } else if (event.target.id == "future" && this.isPresent == true) {
+        this.isPresent = false;
+        this.$emit('presentWanted', this.isPresent);
+      }
+    },
   }
 }
 
@@ -33,7 +38,7 @@ export default {
   overflow:hidden;
   font-family: 'Cyrene', sans-serif;
   font-size: 20px;
-  transition : border 2s;
+  transition : border 2s, color 2s;
 }
 
 #present {
@@ -49,6 +54,22 @@ export default {
 }
 
 .active{
-  color:white;
+  color:var(--my-paper-color);
+  text-shadow: var(--my-main-color) 0px 0 5px, var(--my-main-color) 0px 0 20px;
+  transition : color 1s, text-shadow 1s;
 }
+
+/*Responsive */
+@media screen and (max-aspect-ratio : 3/4) {
+  #TimeSelection {
+    font-size : min(2.5vh, 20px);
+  }
+}
+
+@media screen and (max-aspect-ratio : 1/3) {
+  #future {
+    border:none;
+  }
+}
+
 </style>
