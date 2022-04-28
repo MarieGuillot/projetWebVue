@@ -16,7 +16,7 @@ export default {
   methods : {
     time() {
       this.isPresent = !this.isPresent;
-      this.$root.$emit('present', this.isPresent);
+      this.$emit('presentWanted', this.isPresent);
     }
   }
 }
@@ -33,6 +33,7 @@ export default {
   overflow:hidden;
   font-family: 'Cyrene', sans-serif;
   font-size: 20px;
+  transition : border 2s;
 }
 
 #present {
@@ -44,6 +45,7 @@ export default {
   border-left: solid 2px var(--my-main-color);
   float:right;
   width:50vw;
+  transition : border 2s;
 }
 
 .active{

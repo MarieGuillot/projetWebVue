@@ -10,18 +10,23 @@ const getWeatherData = async function(city) {
     }
 }
 
+const falseWeatherData = async function(city) {
+    console.log("false weather in" + city);
+    return {"temperature":"+15 °C","wind":"44 km/h","description":"Partly cloudy","forecast":[{"day":"1","temperature":"+14 °C","wind":"27 km/h"},{"day":"2","temperature":"17 °C","wind":"18 km/h"},{"day":"3","temperature":"17 °C","wind":"17 km/h"}]};
+}
+
 function extractNumberFromString(string) {
     var signe = 1;
     if (string[0]=="-") {
         signe = -1;
     }
     var matches = string.match(/(\d+)/);
-    var number = signe*parseFloat(matches[0]);
-    if (number) {
-        return number;
+    if (matches != null) {
+        var number = signe*parseFloat(matches[0]);
     } else {
-        return 0; //sometimes the API send an empty string
+        number = 0;
     }
+    return number; 
 }
 
 function qualifyWind(speed){
@@ -75,5 +80,5 @@ function qualifyTemperature(temperature){
     }
 }
 
-export { getWeatherData, extractNumberFromString, qualifyTemperature, qualifyWind}
+export { getWeatherData, extractNumberFromString, qualifyTemperature, qualifyWind, falseWeatherData}
 

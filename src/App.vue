@@ -5,10 +5,10 @@
       <div id="title">
       Weather Poetry
       </div>
-      <CityForm/>
+      <CityForm  v-on:newCitySearched="updateCity" :citySearched="city"/>
     </header>  
-    <TimeSelection/>
-    <WeatherInfo/>
+    <TimeSelection v-on:presentWanted="updateTime"/>
+    <WeatherInfo :citySearched="city" :presentWanted="present"/>
     <footer>
       <div id="infos">
       You searched {{city}}.
@@ -32,15 +32,26 @@ export default {
     CityForm,
     TimeSelection
 	},
-   data() {
-    return {
-      city : "no city yet"
-      }
-   },
-  mounted() {
-      this.$root.$on('city', (cityname) => {
-        this.city = cityname;
-      });
+  data() {
+  return {
+    city : localStorage.getItem("search") || "no city yet", 
+    present : true,
+    }
+  },
+  watch: {
+  city: function(newCity) {
+    localStorage.setItem("search", newCity);
+  }
+  },
+  methods: {
+    updateCity: function(cityName) {
+      this.city = cityName;
+      console.log("city via emit :" + cityName);
+    }, 
+    updateTime:function(isPresent) {
+      this.present = isPresent;
+      console.log("present via emit :" + isPresent);
+    }, 
   }
 }
 
@@ -87,10 +98,11 @@ font-style: normal;
 
 body{
   margin: 0;
+  color: var(--my-main-color);
 }
 
 html {
-  background: url('./assets/paper.jpg'), radial-gradient(ellipse at center, var(--my-main-color), var(--my-paper-color) 50%) ;   
+  background: url('./assets/paper.jpg'), var(--my-paper-color);
   background-size : 500px, cover;
   background-blend-mode: multiply;
   width:100%;
@@ -101,7 +113,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 30px;
-  color: var(--my-main-color);
+  transition : color 2s;
 }
 
 header {
@@ -112,7 +124,8 @@ header {
   background-size : 500px;
   background-blend-mode: multiply;
   line-height: 30px;
-  overflow:hidden;
+  overflow: hidden;
+  transition : color 2s, border 2s;
 }
 
 #title {

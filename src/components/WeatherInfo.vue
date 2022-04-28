@@ -2,11 +2,11 @@
 <div id="OuterBlock">
   <div id="WeatherInfo">
     <!-- Temperature -->
-    <p id="textTemperature"> {{computedTemperature}} </p>
+    <p id="textTemperature"> {{temperature}} </p>
     <!-- Wind -->
-    <p id="textWind"> {{computedWind}} </p>
+    <p id="textWind"> {{wind}} </p>
     <!-- Description -->
-    <p id="textDescription" v-html="computedDescription"> </p>
+    <p id="textDescription" v-html="description"> </p>
   </div>
 </div>
 </template>
@@ -18,9 +18,24 @@ import {createAPoemWithDescription, createAVerseWithTemperature, createAVerseWit
 
 export default {
   name: 'WeatherInfo',
+  props:{
+    citySearched : {type: String, required: true},
+    presentWanted : {type: Boolean, default : true},
+  },
+  watch: {
+		citySearched: function (newCity, oldCity) {
+			console.log("city " + oldCity + " has been replace by " + newCity);
+      this.searchAndWritePoems(newCity);
+		}, 
+
+    presentWanted :function(newTime, oldTime) {
+			console.log("bool present " + oldTime + " has been replace by " + newTime);
+      this.searchAndWritePoems(this.citySearched);
+    }
+	},
   computed: {
 		computedTemperature: function() {
-      if(this.showPresent) {
+      if(this.presentWanted) {
         return this.presentTemperature;
       }
       else {
@@ -28,7 +43,7 @@ export default {
       }
 		},
     computedWind: function() {
-			if(this.showPresent) {
+			if(this.presentWanted) {
         return this.presentWind;
       }
       else {
@@ -36,7 +51,7 @@ export default {
       }
 		},
     computedDescription: function() {
-			if(this.showPresent) {
+			if(this.presentWanted) {
         return this.presentDescription;
       }
       else {
@@ -44,10 +59,18 @@ export default {
       }
 		}
 	},
+
   data() {
     return {
       weatherData: [],
-      request : false,
+      temperatureValue : 0,
+      windValue : 0,
+      temperature : "Ask for a city", 
+      wind : "And a time", 
+      description : "To discover weather through a poem", 
+
+
+
       presentTemperatureValue : 0,
       presentWindValue : 0,
       futureTemperatureValue : 0,
@@ -58,40 +81,60 @@ export default {
       futureTemperature : "Ask for a city", 
       futureWind : "And a time", 
       futureDescription : "To discover weather through a poem", 
-      showPresent : true,
     }
   },
-  created: function() {
+
+  mounted: function() {
+    if(this.citySearched != "no city yet") {
+      this.searchAndWritePoems(this.citySearched);
+    }
 	},
 
-  mounted() {
-      this.$root.$on('city', (cityname) => {
-        getWeatherData(cityname).then(
+	methods: {
+      // searchAndWritePoems(newcity) {
+      //    getWeatherData(newcity).then(
+      //       async (data) => {
+      //       this.weatherData = data;
+      //       this.composeAPoemFromPresentWeather();
+      //       this.composeAPoemFromFutureWeather();
+      //       this.setFutureOrPresentColors();
+      //       });
+      // },
+
+      searchAndWritePoems(newcity) {
+        if (this.presentWanted) {
+           getWeatherData(newcity).then(
             async (data) => {
             this.weatherData = data;
-            console.log(data.forecast);
-            this.composeAPoemFromPresentWeather();
-            this.composeAPoemFromFutureWeather();
-            this.request = true;
-            this.setFutureOrPresentColors();
-            });
-       
-      });
-
-      this.$root.$on('present', (isPresent) => {
-        this.showPresent = isPresent;
-        this.setFutureOrPresentColors();
-      });
-     
-  },
-
-	methods: {
-      setFutureOrPresentColors() {
-        if (this.showPresent) {
-          this.setColors(this.presentTemperatureValue, this.presentWindValue);
+            this.composeAPoemFromPresentWeather().then(
+                  async() => {
+                    this.setFutureOrPresentColors();
+                  }
+            );
+            }
+          );
         } else {
-          this.setColors(this.futureTemperatureValue, this.futureWindValue);
+           getWeatherData(newcity).then(
+            async (data) => {
+            this.weatherData = data;
+              this.composeAPoemFromFutureWeather().then(
+                  async() => {
+                    this.setFutureOrPresentColors();
+                  }
+            );
+            } 
+          );
         }
+        
+      },
+
+      setFutureOrPresentColors() {
+        this.setColors(this.temperatureValue, this.windValue);
+        // if (this.presentWanted) {
+        //   this.setColors(this.presentTemperatureValue, this.presentWindValue);
+        // } else {
+        //   this.setColors(this.futureTemperatureValue, this.futureWindValue);
+        // }
       },
 
       setColors(temperatureToColor, windToColor) {
@@ -107,24 +150,62 @@ export default {
         }
       },
 
+      write(location, text, currentLetter) {
+        this[location] += text[currentLetter];
+        if (currentLetter < text.length-1) {
+          setTimeout(this.write, 30, location, text, currentLetter+1);
+        }
+      },
+
+      async completePoem(location, waitMessage, functionToCreatePoem, parameter) {
+        this[location] = waitMessage;
+        let poem = await functionToCreatePoem(parameter);
+        this[location] = "";
+        this.write(location, poem, 0);
+      },
+
 			async composeAPoemFromPresentWeather() {
-        this.presentTemperatureValue = extractNumberFromString(this.weatherData.temperature);
-        this.presentWindValue = extractNumberFromString(this.weatherData.wind);
-        this.presentDescription = await createAPoemWithDescription(this.weatherData.description);
-        this.presentTemperature = await createAVerseWithTemperature(this.presentTemperatureValue);
-        this.presentWind = await createAVerseWithWind(this.presentWindValue);
-        
+        // this.presentTemperatureValue = extractNumberFromString(this.weatherData.temperature);
+        // this.presentWindValue = extractNumberFromString(this.weatherData.wind);
+        // this.completePoem('presentTemperature',"I am working", createAVerseWithTemperature, this.presentTemperatureValue);
+        // this.completePoem('presentWind', "Writing your poem", createAVerseWithWind, this.presentWindValue);
+        // this.completePoem('presentDescription', "Please wait", createAPoemWithDescription, this.weatherData.description);
+        this.temperatureValue = extractNumberFromString(this.weatherData.temperature);
+        this.windValue = extractNumberFromString(this.weatherData.wind);
+        this.completePoem('temperature',"I am working", createAVerseWithTemperature, this.temperatureValue);
+        this.completePoem('wind', "Writing your poem", createAVerseWithWind, this.windValue);
+        this.completePoem('description', "Please wait", createAPoemWithDescription, this.weatherData.description);
       },
 
       async composeAPoemFromFutureWeather() {
-        const futureTimes = ["tomorrow", "next day", "day after", "future"];
+        // const futureTimes = ["tomorrow", "next day", "day after", "future"];
+        // const index = Math.floor(Math.random() * futureTimes.length);
+        // this.futureDescription = await createAPoemWithDescription(futureTimes[index]);
+        // if (index < futureTimes.length-1) {
+        //   this.futureTemperatureValue = extractNumberFromString(this.weatherData.forecast[index].temperature);
+        //   this.futureWindValue = extractNumberFromString(this.weatherData.forecast[index].wind);
+        //   this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
+        //   this.futureWind = await createAVerseWithWind(this.futureWindValue);
+        // } else {
+        //   var sumT = 0.; 
+        //   var sumW = 0.; 
+        //   for (var day of this.weatherData.forecast) {
+        //     sumT += extractNumberFromString(day.temperature);
+        //     sumW += extractNumberFromString(day.wind);
+        //   }
+        //   this.futureTemperatureValue = sumT/3.;
+        //   this.futureWindValue = sumW/3.;
+        //   this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
+        //   this.futureWind = await createAVerseWithWind(this.futureWindValue);
+        // }
+         const futureTimes = ["tomorrow", "next day", "day after", "future"];
         const index = Math.floor(Math.random() * futureTimes.length);
-        this.futureDescription = await createAPoemWithDescription(futureTimes[index]);
+        this.description = await createAPoemWithDescription(futureTimes[index]);
         if (index < futureTimes.length-1) {
-          this.futureTemperatureValue = extractNumberFromString(this.weatherData.forecast[index].temperature);
-          this.futureWindValue = extractNumberFromString(this.weatherData.forecast[index].wind);
-          this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
-          this.futureWind = await createAVerseWithWind(this.futureWindValue);
+          this.temperatureValue = extractNumberFromString(this.weatherData.forecast[index].temperature);
+          this.windValue = extractNumberFromString(this.weatherData.forecast[index].wind);
+          this.temperature = await createAVerseWithTemperature(this.temperatureValue);
+          this.wind = await createAVerseWithWind(this.windValue);
         } else {
           var sumT = 0.; 
           var sumW = 0.; 
@@ -132,17 +213,13 @@ export default {
             sumT += extractNumberFromString(day.temperature);
             sumW += extractNumberFromString(day.wind);
           }
-          this.futureTemperatureValue = sumT/3.;
-          this.futureWindValue = sumW/3.;
-          this.futureTemperature = await createAVerseWithTemperature(this.futureTemperatureValue);
-          this.futureWind = await createAVerseWithWind(this.futureWindValue);
+          this.temperatureValue = sumT/3.;
+          this.windValue = sumW/3.;
+          this.temperature = await createAVerseWithTemperature(this.temperatureValue);
+          this.wind = await createAVerseWithWind(this.windValue);
         }
-        
       }
-			
 			},
-
-      
 	}
 
 
@@ -169,6 +246,8 @@ export default {
   display : inline-block;
   border-radius: 30px;
   border: solid 2px var(--my-main-color);
+  box-shadow: 0px 0px 100px var(--my-main-color);
+  transition : 3s;
 }
 
 </style>

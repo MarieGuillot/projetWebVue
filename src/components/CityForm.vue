@@ -1,9 +1,9 @@
 <template>
     <form>
       <label for="name">Enter your city : </label>
-      <input type="text" id="name" name="name" required
+      <input v-on:input="okOn" type="text" id="name" name="name" required
        minlength="1" maxlength="20" size="10">
-       <button id="OkButton" v-on:click="submitCity"> Ok </button>
+       <button id="OkButton" v-on:click="submitCity" v-if="okExists"> Ok </button>
     </form>
     
 </template>
@@ -11,12 +11,24 @@
 <script>
 export default {
   name: 'CityForm',
+  data() {
+    return {
+			okExists: false,
+	}
+	},
   methods : {
     submitCity(event) {
       event.preventDefault();
       var txt = document.getElementById('name');
-      this.$root.$emit('city', txt.value);
-    }
+      this.$emit('newCitySearched', txt.value);
+    },
+    okOn() {
+      this.okExists = true;
+      var txt = document.getElementById('name');
+      if (txt.value == "") {
+        this.okExists = false;
+      }
+    },
   }
 }
 
