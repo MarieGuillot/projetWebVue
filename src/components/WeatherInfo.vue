@@ -1,7 +1,7 @@
 <template>
 <div id="OuterBlock">
   <div id="WeatherInfo">
-    <p id="titleSave" v-if="showPoemSaved"> Poem saved {{computedTime}} </p>
+    <p id="titleSave" v-if="showPoemSaved"> {{savedCity}} {{savedTime}} {{computedTime}} </p>
     <!-- Temperature -->
     <p id="textTemperature"> {{computedTemperature}} </p>
     <!-- Wind -->
@@ -88,6 +88,8 @@ export default {
       savedWind: localStorage.getItem("saveWind") || "",
       savedDescription: localStorage.getItem("saveDescription") || "",
       savedDate : localStorage.getItem("saveDate") || 0,
+      savedCity : localStorage.getItem("saveCity") || "",
+      savedTimeSelected : localStorage.getItem("saveTime") || "",
     }
   },
 
@@ -103,14 +105,18 @@ export default {
     },
 
     savePoem: function() {
-      this.savedTemperature = this.temperature,
-      this.savedWind = this.wind,
-      this.savedDescription = this.description,
+      this.savedTemperature = this.temperature;
+      this.savedWind = this.wind;
+      this.savedDescription = this.description;
       this.savedDate = Date.now();
+      this.savedCity = this.citySearched;
+      this.savedTime = this.presentWanted ? "present" : "future";
       localStorage.setItem("saveDescription", this.description);
       localStorage.setItem("saveTemperature", this.temperature);
       localStorage.setItem("saveWind", this.wind);
       localStorage.setItem("saveDate", this.savedDate);
+      localStorage.setItem("saveCity", this.savedCity);
+      localStorage.setItem("saveTime", this.savedTime);
     },
 
     searchAndWritePoems(newcity) {
