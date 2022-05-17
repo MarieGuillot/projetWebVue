@@ -89,11 +89,11 @@ export default {
       savedDescription: localStorage.getItem("saveDescription") || "",
       savedDate : localStorage.getItem("saveDate") || 0,
       savedCity : localStorage.getItem("saveCity") || "",
-      savedTimeSelected : localStorage.getItem("saveTime") || "",
+      savedTime : localStorage.getItem("saveTime") || "",
     }
   },
 
-  mounted: function() {
+  created: function() {
     if(this.citySearched != "no city yet") {
       this.searchAndWritePoems(this.citySearched);
     }

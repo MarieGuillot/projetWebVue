@@ -20,7 +20,7 @@
 
 <script>
 
-document.title = "Weather"
+document.title = "Weather Poetry"
 
 import WeatherInfo from "./components/WeatherInfo"
 import CityForm from "./components/CityForm"
@@ -51,15 +51,12 @@ export default {
   methods: {
     updateCity: function(cityName) {
       this.city = cityName;
-      console.log("city via emit :" + cityName);
     }, 
     updateOptionFuture: function(option) {
       this.optionToComputeFuture = option;
-      console.log("option via emit :" + option);
     },
     updateTime:function(isPresent) {
       this.present = isPresent;
-      console.log("present via emit :" + isPresent);
     }, 
   }
 }
@@ -82,20 +79,6 @@ export default {
          url('assets/Cantique-Normal.woff') format('woff');
     font-weight: normal;
     font-style: normal;
-}
-
-@font-face {
-font-family: 'Muller Narrow Extra Light';
-src: url('assets/MullerNarrow-Light.woff') format('woff');
-font-weight: normal;
-font-style: normal;
-}
-
-@font-face {
-font-family: 'Kruda';
-src: url('assets/Kruda-NarrowLight.woff') format('woff');
-font-weight: normal;
-font-style: normal;
 }
 
 @font-face {

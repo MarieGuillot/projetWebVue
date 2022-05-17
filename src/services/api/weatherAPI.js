@@ -10,6 +10,7 @@ const getWeatherData = async function(city) {
     }
 }
 
+//Au cas où l'API ne fonctionne pas
 const falseWeatherData = async function(city) {
     console.log("false weather in" + city);
     return {"temperature":"+15 °C","wind":"44 km/h","description":"Partly cloudy","forecast":[{"day":"1","temperature":"+14 °C","wind":"27 km/h"},{"day":"2","temperature":"17 °C","wind":"18 km/h"},{"day":"3","temperature":"17 °C","wind":"17 km/h"}]};

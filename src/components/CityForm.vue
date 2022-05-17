@@ -4,11 +4,11 @@
         <label for="name">Enter your city : </label>
         <input v-on:input="okOn" type="text" id="name" name="name" required
         minlength="1" maxlength="20" size="10">
-        <button id="OkButton" v-on:click="submitCity" v-if="okExists"> Ok </button>
+        <button id="OkButton" v-on:click.prevent="submitCity" v-if="okExists"> Ok </button>
       </div>
       <div class="myForm">
        <label for="select" v-if="!presentWanted"> Future option : </label>
-       <select name="select" v-if="!presentWanted" v-on:input="optionFutureSelected" :value="optionFuture"> 
+       <select name="select" v-if="!presentWanted" v-on:input="optionFutureSelected" :value='optionFuture'> 
           <option v-for="option in options" :key="option.value" v-bind:value="option.value">
             {{ option.text }}
           </option>
@@ -37,8 +37,7 @@ export default {
 	}
 	},
   methods : {
-    submitCity(event) {
-      event.preventDefault();
+    submitCity() {
       var txt = document.getElementById('name');
       this.$emit('newCitySearched', txt.value);
     },
