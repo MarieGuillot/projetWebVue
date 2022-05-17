@@ -1,7 +1,7 @@
 <template>
     <form>
-       <button id="savePoem"  v-on:click="saveThisPoem"> Save poem </button>
-       <button id="showSavedPoem" v-on:click="showPoemSaved"> {{this.verb}} saved poem </button>
+       <button id="savePoem"  v-on:click.prevent="saveThisPoem"> Save poem </button>
+       <button id="showSavedPoem" v-on:click.prevent="showPoemSaved"> {{this.verb}} saved poem </button>
     </form>
     
 </template>
@@ -16,8 +16,7 @@ export default {
     }
   },
   methods: {
-    saveThisPoem(event) {
-      event.preventDefault();
+    saveThisPoem() {
       this.$emit('saveThePoem', true);
     },
     changeVerb() {
@@ -27,8 +26,7 @@ export default {
         this.verb = "Show";
       }
     },
-    showPoemSaved(event) {
-      event.preventDefault();
+    showPoemSaved() {
       this.changeVerb();
       this.showThePoemSaved = !this.showThePoemSaved;
       this.$emit('showThePoemSaved', this.showThePoemSaved);
